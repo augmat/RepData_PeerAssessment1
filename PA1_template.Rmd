@@ -1,6 +1,6 @@
 ---
 title: "Reproducible Research: Peer Assessment 1"
-output: 
+output:
   html_document:
     keep_md: true
 ---
@@ -50,7 +50,6 @@ nrow(datap1[rowSums(is.na(datap1)) > 0,])
 for(i in 1:ncol(datap1)){
   if (is.numeric(datap1[,i])){
     datap1[is.na(datap1[,i]), i] <- mean(datap1[,i], na.rm = TRUE) 
-    
   }
 }
 ```
@@ -72,6 +71,21 @@ median(impDataHisto)
 
 ## Are there differences in activity patterns between weekdays and weekends?
 1. Create a new factor variable in the dataset with two levels - "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.
-
+```{r, echo=TRUE}
+datap1$varweek <- weekdays(as.Date(datap1$date))
+datap1$varweek[datap1$varweek == "Sunday"] <- "weekend"
+datap1$varweek[datap1$varweek == "Monday"] <- "weekday"
+datap1$varweek[datap1$varweek == "Tuesday"] <- "weekday"
+datap1$varweek[datap1$varweek == "Wednesday"] <- "weekday"
+datap1$varweek[datap1$varweek == "Thursday"] <- "weekday"
+datap1$varweek[datap1$varweek == "Friday"] <- "weekday"
+datap1$varweek[datap1$varweek == "Saturday"] <- "weekend"
+```
 
 2. Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). See the README file in the GitHub repository to see an example of what this plot should look like using simulated data.
+```{r, echo=TRUE}
+dailyactivity <- aggregate(datap1[,1], list(datap1$interval, datap1$varweek), mean)
+colnames(dailyactivity) <- c("interval","varweek", "avgsteps")
+
+ggplot(dailyactivity, aes(interval, avgsteps)) + geom_line() + xlab("Interval") + ylab ("Number of steps") + ggtitle("Number of steps - weekday vs weekend") + facet_grid(varweek ~ .)
+```
