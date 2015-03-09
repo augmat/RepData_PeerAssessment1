@@ -5,21 +5,73 @@ output:
     keep_md: true
 ---
 
-
 ## Loading and preprocessing the data
 
-
+```{r, echo=TRUE}
+library(ggplot2)
+library(scales)
+datap1 <- read.csv("activity.csv", sep=",")
+goodData <- datap1[complete.cases(datap1),]
+```
 
 ## What is mean total number of steps taken per day?
 
+```{r, echo=TRUE}
 
+dataHisto <- tapply(datap1$steps, datap1$date, sum)
+dataHisto <- dataHisto[!is.na(dataHisto)]
+
+hist(dataHisto, main="Number of steps per day")
+
+mean(dataHisto)
+median(dataHisto)
+
+```
 
 ## What is the average daily activity pattern?
 
+```{r, echo=TRUE}
+dailyactivity <- aggregate(goodData[,1], list(goodData$interval), mean)
+colnames(dailyactivity) <- c("interval", "avgsteps")
 
+ggplot(dailyactivity, aes(interval, avgsteps)) + geom_line() + xlab("Interval") + ylab("Average number of steps taken") + ggtitle("Average number of steps per interval") 
+
+```
 
 ## Imputing missing values
+1. Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
+```{r, echo=TRUE}
 
+nrow(datap1[rowSums(is.na(datap1)) > 0,])
+```
+
+2. Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
+```{r, echo=TRUE}
+for(i in 1:ncol(datap1)){
+  if (is.numeric(datap1[,i])){
+    datap1[is.na(datap1[,i]), i] <- mean(datap1[,i], na.rm = TRUE) 
+    
+  }
+}
+```
+
+3. Create a new dataset that is equal to the original dataset but with the missing data filled in.
+```{r, echo=TRUE}
+imputedData <- datap1
+```
+
+4. Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
+```{r, echo=TRUE}
+impDataHisto <- tapply(imputedData$steps, imputedData$date, sum)
+hist(impDataHisto, main="Number of steps per day")
+
+mean(impDataHisto)
+median(impDataHisto)
+```
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+1. Create a new factor variable in the dataset with two levels - "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.
+
+
+2. Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). See the README file in the GitHub repository to see an example of what this plot should look like using simulated data.
